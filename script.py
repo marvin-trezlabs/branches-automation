@@ -23,7 +23,7 @@ repo = "GitPracticeRepo"
 date = args.date + 'T0:0:0Z'
 umbralDate = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
 
-#GEtting criteria from params
+# Getting criteria from params
 userWantsToDelete = True if args.deleteall == True else False
 isDryRun = True if args.dryrun == True else False
 
@@ -43,7 +43,7 @@ print('  Date: Older than ' + str(umbralDate))
 print('Searching.........\n')
 
 # empty results variable
-branchesFound =[]
+branchesFound = []
 
 # Looping branches 
 for br in branches:
@@ -55,8 +55,8 @@ for br in branches:
     # Extracting the date 
     branchDate = jsondata['commit']['author']['date']
     branchDate = datetime.strptime(branchDate, "%Y-%m-%dT%H:%M:%S%z")
-     
-    #  Checking if the date is in the invertal
+    
+    #  Checking if the date is in the interval
     if(branchDate <= umbralDate) :    
         print('Found BRANCH: ' + br['name'])
         branchesFound.append(br['name'])
@@ -85,7 +85,7 @@ for br in branches:
                 responseDelete = requests.delete(urlDelete, headers=headers)
                 print('deleting merged branch...')
                 if(responseDelete.status_code) :
-                    print('✔ Deleted succesfully')
+                    print('✔ Deleted successfully')
                 else :
                     print('✖ Failed to delete')
                 break

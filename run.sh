@@ -6,4 +6,8 @@ set -a
 source config.env
 set +a
 
-python3 script.py --date=2022-02-05 --deleteall=true --dryrun=true
+# Testing
+python3 script.py --date=2020-02-07 --deleteall=true --dryrun=true
+
+# Remove --dryrun=true to actually perform delete branch
+# python3 script.py --date=2022-02-07 --deleteall=true

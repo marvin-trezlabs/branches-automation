@@ -16,6 +16,12 @@
 ⠀⠀⠀⠀⠛⢿⣿⣿⣿⣷⢦⣄⣀⡀⠤⣤⣤⣀⣀⣬⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀
 ⠀⠀⠀⢠⣴⣿⣿⣿⣿⣿⣦⣭⣷⣶⣿⣿⡿⠿⠟⠋⠁⠉⠛⠛⠿⠋⠁
 ```
+
+## Copy config env sample and set a GITHUB token
+```
+cp example.config.env config.env
+```
+
 ## Default run script
 ```bash
 bash ./run.sh

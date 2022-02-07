@@ -6,8 +6,11 @@ set -a
 source config.env
 set +a
 
-# Testing
-python3 script.py --date=2020-02-07 --deleteall=true --dryrun=true
+# Testing (default base branch: Main )
+python3 script.py --date=2022-02-08 --base-branch=my_branch --delete-all
 
-# Remove --dryrun=true to actually perform delete branch
-# python3 script.py --date=2022-02-07 --deleteall=true
+#If you want to delete, pass the --delete-all flag like the example:
+# python3 script.py --date=2022-02-08 --delete-all
+
+# If you want to specify a different base branch name, pass the --base-branch flag as follows:
+# python3 script.py --date=2022-02-08 --base-branch=master --delete-all

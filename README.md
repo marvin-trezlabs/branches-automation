@@ -35,10 +35,15 @@ export GITHUB_TOKEN=MyToken
 ```
 Running in dry run mode
 ```bash
-python3 script.py --date=2022-02-05 --dryrun=true
+python3 script.py --date=2022-02-05
 ```
 
 Delete the branches that match the criteria
 ```bash
-python3 script.py --date=2022-02-05 --dryrun=true --deleteall=true
+python3 script.py --date=2022-02-05 --deleteall
+```
+
+If you want to specify a different base branch name, pass the --base-branch flag as follows:
+```bash
+python3 script.py --date=2022-02-08 --base-branch=master --delete-all
 ```

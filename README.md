@@ -47,3 +47,8 @@ If you want to specify a different base branch name, pass the --base-branch flag
 ```bash
 python3 script.py --date=2022-02-08 --base-branch=master --delete-all
 ```
+
+Protect branches that you dont want to be deleted even if appears in the Plan / report phase. Default: main
+```bash
+python3 script.py --date=2022-02-08 --base-branch=main --protect protected_branch other_protected_branch
+```

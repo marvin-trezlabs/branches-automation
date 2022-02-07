@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import pprint
 import requests
 import argparse
 from datetime import datetime
@@ -8,9 +9,10 @@ parser = argparse.ArgumentParser()
 
 # Defining arguments
 # parser.add_argument("--dryrun", help="Set this flag to True to run in safe/report mode", dest='dryrun', action='store_true')
-parser.add_argument("--date", help="Date umbral in format 2022-01-28. This will include that date and olders to fetch the report.", type=str)
-parser.add_argument("--base-branch", help="Define the base branch of the search criteria", dest='baseBranch', type=str)
-parser.add_argument("--delete-all", help="Set this flag to True if wants to delete all", dest='deleteall', action='store_true')
+parser.add_argument("--date", help="<Required> Date umbral in format 2022-01-28.", type=str)
+parser.add_argument("--base-branch", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='baseBranch', type=str)
+parser.add_argument("--delete-all", help="<Optional> Set this flag to delete all the matched branches", dest='deleteall', action='store_true')
+parser.add_argument('-p','--protect', default=["master"], nargs='+', dest='protected', help='<Optional> Flag to protect specific branches of being delete by flag --delete-all')
 parser.set_defaults(deleteall=False, baseBranch="main")
 
 args = parser.parse_args()
@@ -28,6 +30,7 @@ umbralDate = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
 # Getting criteria from params
 userWantsToDelete = True if args.deleteall == True else False
 baseBranch = args.baseBranch
+protectedBranches = args.protected
 # isDryRun = True if args.dryrun == True else False
 
 # Setting authorization headers
@@ -46,8 +49,10 @@ if(response.status_code != 200 ) :
 print('Criteria:')
 print( '  Delete: True' if userWantsToDelete == True else '  Dry-Run / Report mode (Pass the --delete-all flag to delete merged branches)')
 # print('  Is dry run: ' + str(isDryRun))
-print('  Date: Older than ' + str(umbralDate))
-print('Searching.........\n')
+print('  Date: Older than: ' + str(umbralDate))
+print("  Protected branches: ", *protectedBranches, sep = " | ") 
+print('\n🔍 Searching.........\n')
+
 
 # empty results variable
 branchesFound = []
@@ -65,7 +70,6 @@ for br in branches:
     
     #  Checking if the date is in the interval
     if(branchDate <= umbralDate) :    
-        branchesFound.append(br['name'])
 
         # Fetching the pull requests of that branches to determine if was merged or not
         url = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls?state=all&base=" + baseBranch + "&head="+ owner + ":" + branchName
@@ -76,25 +80,29 @@ for br in branches:
         for pullRequest in pullRequests:
             # Extracting if was merged bool 
             wasMerged = bool(pullRequest['merged_at']) if pullRequest['merged_at'] else False
-
             if(wasMerged):
+                # pprint.pprint(pullRequest)
+                # Not show empty search message
+                branchesFound.append(br['name'])
                 # Printing info 
+                if br['name'] in protectedBranches:
+                    print('\033[94m<Protected>\033[0m')
                 print('Found BRANCH: ' + br['name'])
-                print(' -- Pull Request: ' + pullRequest['title'] )
-                print(" -- Merged : " + str(wasMerged))
-                print(" -- Merged at date: " + pullRequest['merged_at'])
+                print(' -- Pull Request title: ' + pullRequest['title'] )
+                print(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n')
 
-            # Checking flags to determine if proceed to delete
-            if(wasMerged == True and userWantsToDelete == True) :
-                # Deleting the branch
-                urlDelete = "https://api.github.com/repos/"+ owner + "/" + repo + "/git/refs/heads/" + branchName
-                responseDelete = requests.delete(urlDelete, headers=headers)
-                print('deleting merged branch...')
-                if(responseDelete.status_code) :
-                    print('✔ Deleted successfully')
-                else :
-                    print('✖ Failed to delete')
-                break
+            if br['name'] not in protectedBranches:
+                # Checking flags to determine if proceed to delete
+                if(wasMerged == True and userWantsToDelete == True) :
+                    # Deleting the branch
+                    urlDelete = "https://api.github.com/repos/"+ owner + "/" + repo + "/git/refs/heads/" + branchName
+                    responseDelete = requests.delete(urlDelete, headers=headers)
+                    print('deleting merged branch...')
+                    if(responseDelete.status_code) :
+                        print('✔ Deleted successfully')
+                    else :
+                        print('✖ Failed to delete')
+                    break
 
 # Empty results
 if(len(branchesFound) <=0 ):

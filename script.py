@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 import os
-import pprint
 import requests
 import argparse
-from datetime import datetime
+from datetime import datetime, timedelta
 
 parser = argparse.ArgumentParser()
 
 # Defining arguments
 # parser.add_argument("--dryrun", help="Set this flag to True to run in safe/report mode", dest='dryrun', action='store_true')
-parser.add_argument("--date", help="<Required> Date umbral in format 2022-01-28.", type=str)
+parser.add_argument("--date", help="<Required> Date umbral", type=str)
 parser.add_argument("--base-branch", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='baseBranch', type=str)
 parser.add_argument("--delete-all", help="<Optional> Set this flag to delete all the matched branches", dest='deleteall', action='store_true')
 parser.add_argument('-p','--protect', default=["master"], nargs='+', dest='protected', help='<Optional> Flag to protect specific branches of being delete by flag --delete-all')

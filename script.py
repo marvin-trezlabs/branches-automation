@@ -30,8 +30,7 @@ umbralDate = ''
 def convertDate(days):
     global umbralDate
     d = datetime.today() - timedelta(days=days)
-    umbralDate = d.strftime("%Y-%m-%dT%H:%M:%S%z")
-    umbralDate = datetime.strptime(umbralDate, "%Y-%m-%dT%H:%M:%S%z")
+    umbralDate = datetime.strptime(d, "%Y-%m-%dT%H:%M:%S%z")
 
 if(args.date == '1 week'):
     convertDate(7)

@@ -198,11 +198,11 @@ pipeline {
         stage('Test') {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'TOKEN')]) {
-                    sh '''
-                        export GITHUB_TOKEN=$TOKEN
-                        python3 --version
-                        python3 script.py --date=2022-02-10 --base-branch=main
-                    '''
+                    sh 'export GITHUB_TOKEN=$TOKEN'
+                    script {
+                        env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
+                    }
+                    sh "sudo echo ${env.REPORT}"
                 }
 
             }

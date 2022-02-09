@@ -198,14 +198,21 @@ pipeline {
         stage('Test') {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                    sh "python3 script.py --date=2022-02-10 --base-branch=main"
+                    sh "python3 script.py --date=2022-02-10 --base-branch=main --report-id=${BUILD_NUMBER}"
                     // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
                 }
-                // script {  
-                //     command_var = readFile('command.txt').trim()
-                //     sh "export REPORT=$command_var"
-                //     sh 'echo $REPORT'
-                // }
+                script {  
+                    fileContents = readFile "mail-${BUILD_NUMBER}.txt"
+                    print(fileContents)
+                }
+            }
+        }
+
+        stage('Sending mail') {
+            steps {
+                mail to: 'user@mydomain.com',               
+                    subject: "Sending report of old merged branches" ,
+                    body: """${fileContents}"""
             }
         }
     }   

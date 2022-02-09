@@ -12,6 +12,8 @@ parser.add_argument("--date", help="<Required> Date umbral", type=str)
 parser.add_argument("--base-branch", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='baseBranch', type=str)
 parser.add_argument("--delete-all", help="<Optional> Set this flag to delete all the matched branches", dest='deleteall', action='store_true')
 parser.add_argument('-p','--protect', default=["master"], nargs='+', dest='protected', help='<Optional> Flag to protect specific branches of being delete by flag --delete-all')
+parser.add_argument("--report-id", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='reportId', type=str)
+
 parser.set_defaults(deleteall=False, baseBranch="main")
 
 args = parser.parse_args()
@@ -75,6 +77,11 @@ for br in branches:
         response3 = requests.get(url, headers=headers)
         pullRequests = response3.json()
         
+        # BUILDING THE EMAIL STRUCTURE:
+        with open('mail-' + args.reportId + '.txt', 'a') as f:
+            f.write('\nOLD BRANCHES REPORT\n')
+            f.write('Json ID:' + args.reportId)
+
         # Looping PR 
         for pullRequest in pullRequests:
             # Extracting if was merged bool 
@@ -86,11 +93,27 @@ for br in branches:
                 # Printing info 
                 if br['name'] in protectedBranches:
                     print('\033[94m<Protected>\033[0m')
+
                 print('Found BRANCH: ' + br['name'])
                 print(' -- Pull Request title: ' + pullRequest['title'] )
                 print(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n')
 
+
+                # BUILDING THE EMAIL STRUCTURE:
+                with open('mail-' + args.reportId + '.txt', 'a') as f:
+                    if br['name'] in protectedBranches:
+                        print('\033[94m<Protected>\033[0m')
+
+                    print('Found BRANCH: ' + br['name'])
+                    print(' -- Pull Request title: ' + pullRequest['title'] )
+                    print(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n')
+
             if br['name'] not in protectedBranches:
+                
+                # # Building json
+                # with open(umbralDate + '.txt', 'w') as f:
+                #     print('Filename:', filename, file=f)
+                
                 # Checking flags to determine if proceed to delete
                 if(wasMerged == True and userWantsToDelete == True) :
                     # Deleting the branch

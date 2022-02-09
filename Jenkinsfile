@@ -199,10 +199,6 @@ pipeline {
             steps {
                 script {  
                     withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                        GIT_COMMIT_EMAIL = sh (
-                            script: "python3 script.py --date=2022-02-10 --base-branch=main --token=${GITHUB_TOKEN}",
-                            returnStdout: true
-                        ).trim()
                         sh "python3 script.py --date=2022-02-10 --base-branch=main"
                         // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
                     }

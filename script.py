@@ -12,12 +12,14 @@ parser.add_argument("--date", help="<Required> Date umbral", type=str)
 parser.add_argument("--base-branch", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='baseBranch', type=str)
 parser.add_argument("--delete-all", help="<Optional> Set this flag to delete all the matched branches", dest='deleteall', action='store_true')
 parser.add_argument('-p','--protect', default=["master"], nargs='+', dest='protected', help='<Optional> Flag to protect specific branches of being delete by flag --delete-all')
+parser.add_argument("--token", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='token', type=str)
+
 parser.set_defaults(deleteall=False, baseBranch="main")
 
 args = parser.parse_args()
 
 # Getting Token from ENV
-token = os.getenv('GITHUB_TOKEN', '...')
+token = args.token
 # Variables (Maybe convert to ENV)
 owner = "marvin-trezlabs"
 repo = "GitPracticeRepo"

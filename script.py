@@ -20,7 +20,7 @@ args = parser.parse_args()
 # Getting Token from ENV
 token = os.getenv('GITHUB_TOKEN', '...')
 # Variables (Maybe convert to ENV)
-owner = "marvin-trezlabs"
+owner = "luis-trezlabs"
 repo = "GitPracticeRepo"
 
 # Formating date

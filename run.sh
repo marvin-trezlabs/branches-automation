@@ -7,7 +7,7 @@ source config.env
 set +a
 
 # Testing (default base branch: Main )
-python3 script.py --date=2022-02-08 --base-branch=main
+python3 script.py --date=2022-02-10 --base-branch=main
 
 #If you want to delete, pass the --delete-all flag like the example:
 # python3 script.py --date=2022-02-08 --delete-all

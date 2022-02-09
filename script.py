@@ -31,6 +31,7 @@ def convertDate(days):
     global umbralDate
     d = datetime.today() - timedelta(days=days)
     umbralDate = d.strftime("%Y-%m-%dT%H:%M:%S%z")
+    umbralDate = datetime.strptime(umbralDate, "%Y-%m-%dT%H:%M:%S%z")
 
 if(args.date == '1 week'):
     convertDate(7)
@@ -85,7 +86,7 @@ branchesFound = []
 with open('mail-' + args.reportId + '.txt', 'a') as f:
     f.write('\nOLD BRANCHES REPORT\n')
     f.write('Json ID:' + args.reportId +'\n')
-    f.write('Umbral date:' + umbralDate +'\n')
+    f.write('Umbral date:' + str(umbralDate) +'\n')
     f.write('Base branch:' + baseBranch)
     f.write('Report date:' + datetime.today().strftime("%Y-%m-%dT%H:%M:%S%z") +'\n')
 

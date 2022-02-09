@@ -61,7 +61,7 @@ branchesFound = []
 # BUILDING THE EMAIL STRUCTURE:
 with open('mail-' + args.reportId + '.txt', 'a') as f:
     f.write('\nOLD BRANCHES REPORT\n')
-    f.write('Json ID:' + args.reportId)
+    f.write('Json ID:' + args.reportId +'\n\n')
 
 # Looping branches 
 for br in branches:
@@ -101,12 +101,10 @@ for br in branches:
 
                 # BUILDING THE EMAIL STRUCTURE:
                 with open('mail-' + args.reportId + '.txt', 'a') as f:
-                    if br['name'] in protectedBranches:
-                        f.write('\033[94m<Protected>\033[0m')
-
-                    f.write('Found BRANCH: ' + br['name'])
-                    f.write(' -- Pull Request title: ' + pullRequest['title'] )
-                    f.write(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n')
+                    f.write('\033[94m<Protected>\033[0m  \n' if br['name'] in protectedBranches else '')
+                    f.write('Found BRANCH: ' + br['name'] + '\n')
+                    f.write(' -- Pull Request title: ' + pullRequest['title'] + '\n')
+                    f.write(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n\n')
 
             if br['name'] not in protectedBranches:
                 

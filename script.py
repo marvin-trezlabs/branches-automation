@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--date", help="<Required> Date umbral", type=str)
 parser.add_argument("--base-branch", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='baseBranch', type=str)
 parser.add_argument("--delete-all", help="<Optional> Set this flag to delete all the matched branches", dest='deleteall', action='store_true')
-parser.add_argument('-p','--protect', default=["master"], nargs='+', dest='protected', help='<Optional> Flag to protect specific branches of being delete by flag --delete-all')
+parser.add_argument('-p','--protect', default=["main"], nargs='+', dest='protected', help='<Optional> Flag to protect specific branches of being delete by flag --delete-all')
 parser.add_argument("--report-id", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='reportId', type=str)
 
 parser.set_defaults(deleteall=False, baseBranch="main")
@@ -25,8 +25,30 @@ owner = "marvin-trezlabs"
 repo = "GitPracticeRepo"
 
 # Formating date
-date = args.date + 'T0:0:0Z'
-umbralDate = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
+umbralDate = ''
+
+def convertDate(days):
+    global umbralDate
+    d = datetime.today() - timedelta(days=days)
+    umbralDate = d.strftime("%Y-%m-%dT%H:%M:%S%z")
+
+if(args.date == '1 week'):
+    convertDate(7)
+elif(args.date == '2 weeks'):
+    convertDate(14)
+elif(args.date == '1 month'):
+    convertDate(30)
+elif(args.date == '3 months'):
+    convertDate(60)
+elif(args.date == '1 year'):
+    convertDate(365)
+elif(args.date == '2 years'):
+    convertDate(730)
+elif(args.date == 'All dates'):
+    convertDate(0)
+else:
+    print('ERROR: No matches with that date on local array')
+    exit()
 
 # Getting criteria from params
 userWantsToDelete = True if args.deleteall == True else False
@@ -58,10 +80,14 @@ print('\n🔍 Searching.........\n')
 # empty results variable
 branchesFound = []
 
-# BUILDING THE EMAIL STRUCTURE:
+# BUILDING THE EMAIL STRUCTURE: 
+# a if for append mode
 with open('mail-' + args.reportId + '.txt', 'a') as f:
     f.write('\nOLD BRANCHES REPORT\n')
-    f.write('Json ID:' + args.reportId +'\n\n')
+    f.write('Json ID:' + args.reportId +'\n')
+    f.write('Umbral date:' + umbralDate +'\n')
+    f.write('Base branch:' + baseBranch)
+    f.write('Report date:' + datetime.today().strftime("%Y-%m-%dT%H:%M:%S%z") +'\n')
 
 # Looping branches 
 for br in branches:
@@ -102,7 +128,7 @@ for br in branches:
                 # BUILDING THE EMAIL STRUCTURE:
                 with open('mail-' + args.reportId + '.txt', 'a') as f:
                     f.write('\033[94m<Protected>\033[0m  \n' if br['name'] in protectedBranches else '')
-                    f.write('Found BRANCH: ' + br['name'] + '\n')
+                    f.write('BRANCH: ' + br['name'] + '\n')
                     f.write(' -- Pull Request title: ' + pullRequest['title'] + '\n')
                     f.write(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n\n')
 
@@ -127,5 +153,8 @@ for br in branches:
 # Empty results
 if(len(branchesFound) <=0 ):
     print('NOT found branches that match the Criteria')
+      # BUILDING THE EMAIL STRUCTURE:
+    with open('mail-' + args.reportId + '.txt', 'a') as f:
+        f.write('NOT found branches that match the Criteria...')
 
 

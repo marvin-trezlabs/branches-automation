@@ -39,5 +39,4 @@ elif(args.date == 'All dates'):
 else:
     print('ERROR: No matches with that date on local array')
     exit()
-
 print(umbralDate)

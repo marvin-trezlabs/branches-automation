@@ -58,6 +58,11 @@ print('\n🔍 Searching.........\n')
 # empty results variable
 branchesFound = []
 
+# BUILDING THE EMAIL STRUCTURE:
+with open('mail-' + args.reportId + '.txt', 'a') as f:
+    f.write('\nOLD BRANCHES REPORT\n')
+    f.write('Json ID:' + args.reportId)
+
 # Looping branches 
 for br in branches:
     branchName = br['name']
@@ -76,11 +81,6 @@ for br in branches:
         url = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls?state=all&base=" + baseBranch + "&head="+ owner + ":" + branchName
         response3 = requests.get(url, headers=headers)
         pullRequests = response3.json()
-        
-        # BUILDING THE EMAIL STRUCTURE:
-        with open('mail-' + args.reportId + '.txt', 'a') as f:
-            f.write('\nOLD BRANCHES REPORT\n')
-            f.write('Json ID:' + args.reportId)
 
         # Looping PR 
         for pullRequest in pullRequests:
@@ -102,11 +102,11 @@ for br in branches:
                 # BUILDING THE EMAIL STRUCTURE:
                 with open('mail-' + args.reportId + '.txt', 'a') as f:
                     if br['name'] in protectedBranches:
-                        print('\033[94m<Protected>\033[0m')
+                        f.write('\033[94m<Protected>\033[0m')
 
-                    print('Found BRANCH: ' + br['name'])
-                    print(' -- Pull Request title: ' + pullRequest['title'] )
-                    print(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n')
+                    f.write('Found BRANCH: ' + br['name'])
+                    f.write(' -- Pull Request title: ' + pullRequest['title'] )
+                    f.write(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n')
 
             if br['name'] not in protectedBranches:
                 

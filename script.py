@@ -32,7 +32,6 @@ baseBranch = args.baseBranch
 protectedBranches = args.protected
 # isDryRun = True if args.dryrun == True else False
 
-print(token)
 # Setting authorization headers
 headers = {'Authorization': f'token {token}'}
 

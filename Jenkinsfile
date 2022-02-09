@@ -197,13 +197,15 @@ pipeline {
         }
         stage('Test') {
             steps {
-                script {  
-                    withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                        sh "python3 script.py --date=2022-02-10 --base-branch=main"
-                        // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
-                    }
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh "python3 script.py --date=2022-02-10 --base-branch=main"
+                    // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
                 }
-                sh "echo ${env.REPORT}"
+                // script {  
+                //     command_var = readFile('command.txt').trim()
+                //     sh "export REPORT=$command_var"
+                //     sh 'echo $REPORT'
+                // }
             }
         }
     }   

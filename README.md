@@ -20,7 +20,7 @@ TODO:
 - THE idea is to have two files: 1 for the mail structure and 1 for the json with the branches names json
 - delete every time we send an email the email template file
 - Have a checkbox to activate/deactivate the email send
-- Read the date param and use the test script for date handling
+- Read the date param and use the test script for date handling - JUST FIX THE PARSING
 - Other jenkins job to delete the branches
 - Read the file created from python on the report job
 - Build a text box for base branch or remove that parameter

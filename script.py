@@ -12,7 +12,8 @@ parser.add_argument("--date", help="<Required> Date umbral", type=str)
 parser.add_argument("--base-branch", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='baseBranch', type=str)
 parser.add_argument("--delete-all", help="<Optional> Set this flag to delete all the matched branches", dest='deleteall', action='store_true')
 parser.add_argument('-p','--protect', default=["main"], nargs='+', dest='protected', help='<Optional> Flag to protect specific branches of being delete by flag --delete-all')
-parser.add_argument("--report-id", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='reportId', type=str)
+parser.add_argument("--report-id", help="<Optional>  Define the report ID", dest='reportId', type=str)
+parser.add_argument("--username", help="Define the Username", dest='username', type=str)
 
 parser.set_defaults(deleteall=False, baseBranch="main")
 
@@ -21,7 +22,7 @@ args = parser.parse_args()
 # Getting Token from ENV
 token = os.getenv('GITHUB_TOKEN', '...')
 # Variables (Maybe convert to ENV)
-owner = "marvin-trezlabs"
+owner = args.username
 repo = "GitPracticeRepo"
 
 # Formating date
@@ -30,7 +31,7 @@ umbralDate = ''
 def convertDate(days):
     global umbralDate
     d = datetime.today() - timedelta(days=days)
-    umbralDate = datetime.strptime(d, "%Y-%m-%dT%H:%M:%S%z")
+    umbralDate = d.strftime("%Y-%m-%dT%H:%M:%S%z")
 
 if(args.date == '1 week'):
     convertDate(7)
@@ -108,7 +109,7 @@ for br in branches:
         response3 = requests.get(url, headers=headers)
         pullRequests = response3.json()
 
-        # Looping PR 
+        # Looping PR
         for pullRequest in pullRequests:
             # Extracting if was merged bool 
             wasMerged = bool(pullRequest['merged_at']) if pullRequest['merged_at'] else False
@@ -135,7 +136,7 @@ for br in branches:
             if br['name'] not in protectedBranches:
                 
                 # # Building json
-                # with open(umbralDate + '.txt', 'w') as f:
+                # with open(umbralDate + '.json', 'w') as f:
                 #     print('Filename:', filename, file=f)
                 
                 # Checking flags to determine if proceed to delete

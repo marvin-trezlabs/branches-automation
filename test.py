@@ -1,9 +1,13 @@
 from datetime import datetime, timedelta
 import argparse
+import requests
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--date", help="<Required> Date umbral", type=str)
 args = parser.parse_args()
+token = "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"
+headers = {'Authorization': f'token {token}'}
 
 dates = [
 '1 week',
@@ -14,29 +18,31 @@ dates = [
 '2 years',
 'All dates'
 ]
-
+url = "https://api.github.com/repos/marvin-trezlabs/GitPracticeRepo/branches"
+response = requests.get(url, headers=headers)
+branches = response.json()
+print(branches)
 umbralDate = ""
+
 
 def convertDate(days):
     global umbralDate
     d = datetime.today() - timedelta(days=days)
     umbralDate = d.strftime("%Y-%m-%dT%H:%M:%S%z")
 
-if(args.date == '1 week'):
-    convertDate(7)
-elif(args.date == '2 weeks'):
-    convertDate(14)
-elif(args.date == '1 month'):
-    convertDate(30)
-elif(args.date == '3 months'):
-    convertDate(60)
-elif(args.date == '1 year'):
-    convertDate(365)
-elif(args.date == '2 years'):
-    convertDate(730)
-elif(args.date == 'All dates'):
+if('All dates' == 'All dates'):
     convertDate(0)
 else:
-    print('ERROR: No matches with that date on local array')
+    print('ERROR: No matches with that date on loscal array')
     exit()
+
+for br in branches:
+    branchName = br['name']
+    # Fetching the head commit in order to get the latest commit date
+    response2 = requests.get(br['commit']['url'], headers=headers)
+    jsondata = response2.json()
+    branchDate = jsondata['commit']['author']['date']
+    print(branchDate)
+    if(branchDate <= umbralDate):
+        print('pass the validation')
 print(umbralDate)

@@ -134,7 +134,7 @@ pipeline {
                 }
                 script {  
                     fileContents = readFile "mail-${BUILD_NUMBER}.txt"
-                    print(fileContents)
+                    print("Sending report JSON ID:${BUILD_NUMBER}")
                 }
             }
         }

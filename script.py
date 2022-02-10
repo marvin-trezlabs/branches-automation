@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import os
 import requests
 import argparse
@@ -88,9 +89,9 @@ branchesFound = []
 with open('mail-' + args.reportId + '.txt', 'a') as f:
     f.write('\nOLD BRANCHES REPORT\n')
     f.write('Json ID:' + args.reportId +'\n')
-    f.write('Umbral date:' + str(umbralDate) +'\n')
-    f.write('Base branch:' + baseBranch)
-    f.write('Report date:' + datetime.today().strftime("%Y-%m-%dT%H:%M:%S%z") +'\n')
+    f.write('Date: Older than: ' + args.date + " - " + str(umbralDate) +'\n')
+    f.write('Base branch:' + baseBranch + '\n')
+    f.write('Report date:' + datetime.today().strftime("%Y-%m-%dT%H:%M:%S%z") +'\n\n')
 
 # Looping branches 
 for br in branches:
@@ -136,11 +137,7 @@ for br in branches:
                     f.write(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n\n')
 
             if br['name'] not in protectedBranches:
-                
-                # # Building json
-                # with open(umbralDate + '.json', 'w') as f:
-                #     print('Filename:', filename, file=f)
-                
+
                 # Checking flags to determine if proceed to delete
                 if(wasMerged == True and userWantsToDelete == True) :
                     # Deleting the branch
@@ -158,6 +155,9 @@ if(len(branchesFound) <=0 ):
     print('NOT found branches that match the Criteria')
       # BUILDING THE EMAIL STRUCTURE:
     with open('mail-' + args.reportId + '.txt', 'a') as f:
-        f.write('NOT found branches that match the Criteria...')
-
-
+        f.write('NOT found deletable branches that match the Criteria...')
+else :       
+    # Building json REPORT
+    with open(args.reportId + ".json", "w") as file:
+        file.seek(0)
+        json.dump(branchesFound, file)

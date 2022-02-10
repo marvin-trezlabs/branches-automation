@@ -133,7 +133,7 @@ pipeline {
                     // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
                 }
                 script {  
-                    fileContents = readFile "mail-${BUILD_NUMBER}.txt"
+                    fileContents = readFile "./mails/mail-${BUILD_NUMBER}.txt"
                     print("Sending report JSON ID:${BUILD_NUMBER}")
                 }
             }

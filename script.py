@@ -130,7 +130,7 @@ for br in branches:
 
 
                 # BUILDING THE EMAIL STRUCTURE:
-                with open('mail-' + args.reportId + '.txt', 'a') as f:
+                with open('./mails/mail-' + args.reportId + '.txt', 'a') as f:
                     f.write('\033[94m<Protected>\033[0m  \n' if br['name'] in protectedBranches else '')
                     f.write('BRANCH: ' + br['name'] + '\n')
                     f.write(' -- Pull Request title: ' + pullRequest['title'] + '\n')
@@ -158,6 +158,6 @@ if(len(branchesFound) <=0 ):
         f.write('NOT found deletable branches that match the Criteria...')
 else :       
     # Building json REPORT
-    with open(args.reportId + ".json", "w") as file:
+    with open('./json-reports/' + args.reportId + ".json", "w") as file:
         file.seek(0)
         json.dump(branchesFound, file)

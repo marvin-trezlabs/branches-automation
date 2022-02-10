@@ -128,6 +128,8 @@ pipeline {
         }
         stage('Test') {
             steps {
+                sh 'mkdir -p json-reports'
+                sh 'mkdir -p mails'
                 withCredentials([string(credentialsId: "${params.CREDENTIAL}", variable: 'GITHUB_TOKEN')]) {
                     sh "python3 script.py --date='${params.DATE}' --base-branch=main --report-id=${BUILD_NUMBER} --username=${params.USERNAME}"
                     // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()

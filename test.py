@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--date", help="<Required> Date umbral", type=str)
 args = parser.parse_args()
-token = "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"
+token = os.getenv('GITHUB_TOKEN', '...')
 headers = {'Authorization': f'token {token}'}
 
 dates = [

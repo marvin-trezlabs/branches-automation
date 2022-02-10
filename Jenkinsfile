@@ -197,12 +197,12 @@ pipeline {
                 sh 'mkdir -p json-reports'
                 sh 'mkdir -p mails'
                 withCredentials([string(credentialsId: "${params.CREDENTIAL}", variable: 'GITHUB_TOKEN')]) {
-                    sh "python3 script.py --date='${params.DATE}' --base-branch=main --report-id=${BUILD_NUMBER} --username=${params.USERNAME} --repo=${params.REPO}"
+                    sh "python3 script.py --date='${params.DATE}' --base-branch=main --report-id=${args.REPO}-${BUILD_NUMBER} --username=${params.USERNAME} --repo=${params.REPO}"
                     // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
                 }
                 script {  
                     fileContents = readFile "mails/mail-${BUILD_NUMBER}.txt"
-                    print("Sending report JSON ID:${BUILD_NUMBER}")
+                    print("Sending report JSON ID:${args.REPO}-${BUILD_NUMBER}")
                 }
             }
         }

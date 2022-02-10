@@ -30,10 +30,12 @@ repo = args.repo
 # Formating date
 umbralDate = ''
 
+# Reading the paramenters and converting to specific iso time
 def convertDate(days):
     global umbralDate
     d = datetime.today() - timedelta(days=days)
     umbralDate = d.strftime("%Y-%m-%dT%H:%M:%S%z")
+    # Just to match the format from github
     umbralDate = umbralDate + 'Z'
     umbralDate = datetime.strptime(umbralDate, "%Y-%m-%dT%H:%M:%S%z")
 
@@ -59,7 +61,6 @@ else:
 userWantsToDelete = True if args.deleteall == True else False
 baseBranch = args.baseBranch
 protectedBranches = args.protected
-# isDryRun = True if args.dryrun == True else False
 
 # Setting authorization headers
 headers = {'Authorization': f'token {token}'}
@@ -87,7 +88,7 @@ branchesFound = []
 
 # BUILDING THE EMAIL STRUCTURE: 
 # a if for append mode
-with open('mail-' + args.reportId + '.txt', 'a') as f:
+with open('mails/mail-' + args.reportId + '.txt', 'a') as f:
     f.write('\nOLD BRANCHES REPORT\n')
     f.write('Json ID:' + args.reportId +'\n')
     f.write('Date: Older than: ' + args.date + " - " + str(umbralDate) +'\n')
@@ -119,7 +120,7 @@ for br in branches:
             wasMerged = bool(pullRequest['merged_at']) if pullRequest['merged_at'] else False
             if(wasMerged):
                 # pprint.pprint(pullRequest)
-                # Not show empty search message
+                # To have the array with the names
                 branchesFound.append(br['name'])
                 # Printing info 
                 if br['name'] in protectedBranches:

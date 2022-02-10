@@ -15,6 +15,7 @@ parser.add_argument("--delete-all", help="<Optional> Set this flag to delete all
 parser.add_argument('-p','--protect', default=["main"], nargs='+', dest='protected', help='<Optional> Flag to protect specific branches of being delete by flag --delete-all')
 parser.add_argument("--report-id", help="<Optional>  Define the report ID", dest='reportId', type=str)
 parser.add_argument("--username", help="Define the Username", dest='username', type=str)
+parser.add_argument("--repo", help="Define the Repo", dest='repo', type=str)
 
 parser.set_defaults(deleteall=False, baseBranch="main")
 
@@ -24,7 +25,7 @@ args = parser.parse_args()
 token = os.getenv('GITHUB_TOKEN', '...')
 # Variables (Maybe convert to ENV)
 owner = args.username
-repo = "GitPracticeRepo"
+repo = args.repo
 
 # Formating date
 umbralDate = ''

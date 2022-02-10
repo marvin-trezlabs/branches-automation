@@ -15,6 +15,44 @@ for (cred in creds) {
 
 return credsIds;""";
 
+def repoScript = """import groovy.json.JsonSlurper
+
+def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+      com.cloudbees.plugins.credentials.Credentials.class
+)
+
+token = 'none'
+
+for (cred in creds) {
+    if(cred.id == CREDENTIAL && cred.hasProperty('secret')){
+        token = cred.secret
+    }
+}
+
+def get;
+if(token != 'none'){
+    get = new URL("https://api.github.com/user/repos").openConnection();
+    get.setRequestProperty("Authorization", 'token ' + token);
+}else {
+    get = new URL("https://api.github.com/users/" + USERNAME +"/repos").openConnection();
+}
+
+def getRC = get.getResponseCode();
+
+if (getRC.equals(200)) {
+    def json = get.inputStream.withCloseable { inStream ->
+        new JsonSlurper().parse( inStream as InputStream )
+    }
+
+    def item = json;
+    def names = [];
+
+    item.each { repo ->
+        names.push(repo.name);
+    }   
+    return names;
+}""";
+
 def dates = """return[
 '1 week',
 '2 weeks',
@@ -87,6 +125,33 @@ pipeline {
                                     ]
                                 ]
                             ],
+                               [$class: 'CascadeChoiceParameter', 
+                                //Single combo-box item select type of choice
+                                choiceType: 'PT_SINGLE_SELECT', 
+                                description: 'Select the Repository from the Dropdown List', 
+                                filterLength: 1, 
+                                filterable: true, 
+                                referencedParameters: 'CREDENTIAL, USERNAME', 
+                                //Important for identify it in the cascade choice parameter and the params. values
+                                name: 'REPO', 
+                                script: [
+                                    $class: 'GroovyScript', 
+                                    //Error script
+                                    fallbackScript: [
+                                        classpath: [], 
+                                        sandbox: false, 
+                                        script: 
+                                            "return['Could not get The Repos']"
+                                    ], 
+                                    script: [
+                                        classpath: [], 
+                                        sandbox: false, 
+                                        //Calling local variable with the script as a string
+                                        script: "${repoScript}"
+                                        
+                                    ]
+                                ]
+                            ],
                             [$class: 'ChoiceParameter', 
                                 //Single combo-box item select type of choice
                                 choiceType: 'PT_SINGLE_SELECT', 
@@ -128,14 +193,15 @@ pipeline {
         }
         stage('Test') {
             steps {
+                // Needed directories for the python script to store the mail and json
                 sh 'mkdir -p json-reports'
                 sh 'mkdir -p mails'
                 withCredentials([string(credentialsId: "${params.CREDENTIAL}", variable: 'GITHUB_TOKEN')]) {
-                    sh "python3 script.py --date='${params.DATE}' --base-branch=main --report-id=${BUILD_NUMBER} --username=${params.USERNAME}"
+                    sh "python3 script.py --date='${params.DATE}' --base-branch=main --report-id=${BUILD_NUMBER} --username=${params.USERNAME} --repo=${params.REPO}"
                     // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
                 }
                 script {  
-                    fileContents = readFile "./mails/mail-${BUILD_NUMBER}.txt"
+                    fileContents = readFile "mails/mail-${BUILD_NUMBER}.txt"
                     print("Sending report JSON ID:${BUILD_NUMBER}")
                 }
             }

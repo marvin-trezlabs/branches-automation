@@ -63,6 +63,19 @@ def dates = """return[
 'All dates'
 ]""";
 
+def getReport = """import groovy.json.JsonSlurper
+
+if (JSON_REPORT_ID){
+
+def filepath = "json-reports/" + JSON_REPORT_ID + ".json"
+
+String currentDir = new File(filepath)
+
+return currentDir
+} else {
+return ""
+}""";
+
 
 pipeline {
     agent any
@@ -177,6 +190,29 @@ pipeline {
                                         
                                     ]
                                 ]
+                            ],
+                            string(name: 'MAIL', defaultValue: '', description: 'Optional: Mail direction to send the report. Leave blank for not sending\n\n\n\n TO DELETE: \n IF U ALREADY GENERATED A JSON PLAN '),
+                            string(name: 'JSON_REPORT_ID', defaultValue: '', description: 'DANGEROUS: Provide the ID of a previous report to for DELETING the branches'),
+                            booleanParam(name: 'CONFIRM_DELETE', defaultValue: false, description: 'DANGEROUS: Confirm delete of the previous REPORT ID'),
+                            [$class: 'DynamicReferenceParameter',
+                                choiceType: 'ET_FORMATTED_HTML',
+                                // omitValueField: true,
+                                name: '',
+                                referencedParameters: 'JSON_REPORT_ID',
+                                script: [
+                                    $class: 'GroovyScript',
+                                    fallbackScript: [
+                                            classpath: [],
+                                            sandbox: true,
+                                            script:
+                                            'return[\'ERROR or Report doesnt exist on filesystem...\']'
+                                    ],
+                                    script: [
+                                        classpath: [],
+                                        sandbox: false,
+                                        script:"${getReport}"
+                                    ]
+                                ]
                             ]
                         ])
                     ])
@@ -197,21 +233,26 @@ pipeline {
                 sh 'mkdir -p json-reports'
                 sh 'mkdir -p mails'
                 withCredentials([string(credentialsId: "${params.CREDENTIAL}", variable: 'GITHUB_TOKEN')]) {
-                    sh "python3 script.py --date='${params.DATE}' --base-branch=main --report-id=${args.REPO}-${BUILD_NUMBER} --username=${params.USERNAME} --repo=${params.REPO}"
+                    sh "python3 script.py --date='${params.DATE}' --base-branch=main --report-id=${params.REPO}-${BUILD_NUMBER} --username=${params.USERNAME} --repo=${params.REPO}"
                     // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
                 }
                 script {  
-                    fileContents = readFile "mails/mail-${BUILD_NUMBER}.txt"
-                    print("Sending report JSON ID:${args.REPO}-${BUILD_NUMBER}")
+                    mailContent = readFile "mails/mail-${params.REPO}-${BUILD_NUMBER}.txt"
+                    print("Report JSON ID:${params.REPO}-${BUILD_NUMBER}")
                 }
             }
         }
 
         stage('Sending mail') {
             steps {
-                mail to: 'user@mydomain.com',               
-                    subject: "Sending report of old merged branches" ,
-                    body: """${fileContents}"""
+                script {
+                    if(params.MAIL){
+                        mail to: params.MAIL,               
+                            subject: "Sending report of old merged branches" ,
+                            body: """${mailContent}"""
+                    }
+                }
+
             }
         }
     }   

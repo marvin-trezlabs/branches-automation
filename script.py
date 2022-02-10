@@ -160,6 +160,9 @@ if(len(branchesFound) <=0 ):
     #     f.write('NOT found deletable branches that match the Criteria...')
 else :       
     # Building json REPORT
+    # data_set = {"owner": owner, "key2": [4, 5, 6]}
+
+    # json_dump = json.dumps(data_set)
     with open('json-reports/' + args.reportId + ".json", "w") as file:
         file.seek(0)
         json.dump(branchesFound, file)

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import argparse
 import requests
+import os
 
 parser = argparse.ArgumentParser()
 
@@ -29,6 +30,8 @@ def convertDate(days):
     global umbralDate
     d = datetime.today() - timedelta(days=days)
     umbralDate = d.strftime("%Y-%m-%dT%H:%M:%S%z")
+    umbralDate = umbralDate + 'Z'
+    umbralDate = datetime.strptime(umbralDate, "%Y-%m-%dT%H:%M:%S%z")
 
 if('All dates' == 'All dates'):
     convertDate(0)
@@ -42,6 +45,7 @@ for br in branches:
     response2 = requests.get(br['commit']['url'], headers=headers)
     jsondata = response2.json()
     branchDate = jsondata['commit']['author']['date']
+    branchDate = datetime.strptime(branchDate, "%Y-%m-%dT%H:%M:%S%z")
     print(branchDate)
     if(branchDate <= umbralDate):
         print('pass the validation')

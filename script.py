@@ -146,3 +146,5 @@ else :
     with open('json-reports/' + args.reportId + ".json", "w") as file:
         file.seek(0)
         json.dump(json_dump, file)
+
+    print("Report JSON ID:"+args.reportId)

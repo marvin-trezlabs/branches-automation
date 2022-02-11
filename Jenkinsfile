@@ -69,10 +69,53 @@ if (JSON_REPORT_ID){
 
 def filepath = "/var/jenkins_home/workspace/branch-cleaner/json-reports/" + JSON_REPORT_ID + ".json"
 def command = "cat " + filepath
-return command.execute().text
+def branches = command.execute().text 
+if (branches) {
+def html = "<p style='color:red;'>This action will delete the folowing branches: </p><p style='color:gray;'>" + branches + "</p>"
+return html
+}else{
+return "<p style='color:gray;'> Report not found </p>"
+}
 
 } else {
 return ""
+}""";
+
+def branchScript = """import groovy.json.JsonSlurper
+
+def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+      com.cloudbees.plugins.credentials.Credentials.class
+)
+
+def token = 'none'
+
+for (cred in creds) {
+    if(cred.id == CREDENTIAL && cred.hasProperty('secret')){
+        token = cred.secret
+    }
+}
+
+def getBranches;
+getBranches = new URL("https://api.github.com/repos/" + USERNAME +"/" + REPO + "/branches").openConnection();
+
+if(token != 'none'){
+    getBranches.setRequestProperty("Authorization", 'token ' + token);
+}
+
+def getRCBranches = getBranches.getResponseCode();
+
+if (getRCBranches.equals(200)) {
+   def jsonBr = getBranches.inputStream.withCloseable { inStream ->
+           new JsonSlurper().parse( inStream as InputStream )
+   }
+
+    def itemBr = jsonBr;
+    def namesBr = [];
+
+    itemBr.each { branch ->
+        namesBr.push(branch.name);
+    } 
+    return namesBr;
 }""";
 
 
@@ -169,6 +212,28 @@ pipeline {
                                     ]
                                 ]
                             ],
+                            [$class: 'CascadeChoiceParameter', 
+                                choiceType: 'PT_SINGLE_SELECT', 
+                                description: 'Select the Branch from the Dropdown List',
+                                name: 'BASE_BRANCH',                                
+                                filterable: true, 
+                                //Referencing the repo
+                                referencedParameters: 'REPO, CREDENTIAL, USERNAME', 
+                                script: 
+                                    [$class: 'GroovyScript', 
+                                    fallbackScript: [
+                                            classpath: [], 
+                                            sandbox: false, 
+                                            script: "return['Could not get Branch from the Repo']"
+                                            ], 
+                                    script: [
+                                            classpath: [], 
+                                            sandbox: false, 
+                                            //branchScript variable
+                                            script: "${branchScript}"
+                                    ] 
+                                ]
+                            ],
                             [$class: 'ChoiceParameter', 
                                 //Single combo-box item select type of choice
                                 choiceType: 'PT_SINGLE_SELECT', 
@@ -197,7 +262,6 @@ pipeline {
                             ],
                             string(name: 'MAIL', defaultValue: '', description: 'Optional: Mail direction to send the report. Leave blank for not sending\n\n\n\n TO DELETE: \n IF U ALREADY GENERATED A JSON PLAN '),
                             string(name: 'JSON_REPORT_ID', defaultValue: '', description: 'DANGEROUS: Provide the ID of a previous report to for DELETING the branches'),
-                            booleanParam(name: 'CONFIRM_DELETE', defaultValue: false, description: 'DANGEROUS: Confirm delete of the previous REPORT ID'),
                             [$class: 'DynamicReferenceParameter',
                                 choiceType: 'ET_FORMATTED_HTML',
                                 // omitValueField: true,
@@ -217,7 +281,8 @@ pipeline {
                                         script:"${getReport}"
                                     ]
                                 ]
-                            ]
+                            ],
+                            booleanParam(name: 'CONFIRM_DELETE', defaultValue: false, description: 'DANGEROUS: Confirm delete of the previous REPORT ID')
                         ])
                     ])
                 }
@@ -238,12 +303,11 @@ pipeline {
                 sh 'mkdir -p json-reports'
                 sh 'mkdir -p mails'
                 withCredentials([string(credentialsId: "${params.CREDENTIAL}", variable: 'GITHUB_TOKEN')]) {
-                    sh "python3 script.py --date='${params.DATE}' --base-branch=main --report-id=${params.REPO}-${BUILD_NUMBER} --username=${params.USERNAME} --repo=${params.REPO}"
+                    sh "python3 script.py --date='${params.DATE}' --base-branch=${params.BASE_BRANCH} --report-id=${params.REPO}-${BUILD_NUMBER} --username=${params.USERNAME} --repo=${params.REPO}"
                     // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
                 }
                 script {  
                     mailContent = readFile "mails/mail-${params.REPO}-${BUILD_NUMBER}.txt"
-                    print("Report JSON ID:${params.REPO}-${BUILD_NUMBER}")
                 }
             }
         }

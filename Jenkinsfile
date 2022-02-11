@@ -67,11 +67,10 @@ def getReport = """import groovy.json.JsonSlurper
 
 if (JSON_REPORT_ID){
 
-def filepath = "json-reports/" + JSON_REPORT_ID + ".json"
+def filepath = "/var/jenkins_home/workspace/test/json-reports/" + JSON_REPORT_ID + ".json"
 
-String currentDir = new File(filepath)
+return "cat ${filepath}".execute().text
 
-return currentDir
 } else {
 return ""
 }""";

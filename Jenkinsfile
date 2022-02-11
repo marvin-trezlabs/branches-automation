@@ -231,7 +231,8 @@ pipeline {
                     url: "https://github.com/marvin-trezlabs/branches-automation.git"
             }
         }
-        stage('Test') {
+        stage('Python search') {
+            when { expression { params.JSON_REPORT_ID == '' } }
             steps {
                 // Needed directories for the python script to store the mail and json
                 sh 'mkdir -p json-reports'
@@ -248,6 +249,7 @@ pipeline {
         }
 
         stage('Sending mail') {
+            when { expression { params.JSON_REPORT_ID == '' } }
             steps {
                 script {
                     if(params.MAIL){
@@ -261,6 +263,7 @@ pipeline {
         }
 
         stage('Deleting branches if ID was provided') {
+            when { expression { params.JSON_REPORT_ID != '' } }
             steps {
                 script {
                     if(params.JSON_REPORT_ID && params.CONFIRM_DELETE){

@@ -34,6 +34,7 @@ for data in branches:
     responseDelete = requests.delete(urlDelete, headers=headers)
     print('deleting merged branch...')
     if(responseDelete.status_code) :
+        os.remove('json-reports/' + args.reportId + ".json")
         print('✔ Deleted successfully')
     else :
         print('✖ Failed to delete')

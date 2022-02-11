@@ -138,6 +138,8 @@ for br in branches:
 # Empty results
 if(len(branchesFound) <=0 ):
     print('NOT found branches that match the Criteria')
+    with open('mails/mail-' + args.reportId + '.txt', 'a') as f:
+        f.write('\n\n\n NOT found branches that match the Criteria')
 
 else :       
     # Building json REPORT

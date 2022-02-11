@@ -23,6 +23,7 @@ with open('json-reports/' + args.reportId + ".json") as jsonFile:
     jsonObject = json.load(jsonFile)
     jsonFile.close()
 
+jsonObject = json.loads(jsonObject)
 print(jsonObject)
 repo = jsonObject['repo']
 branches = jsonObject['branches']

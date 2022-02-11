@@ -67,9 +67,9 @@ def getReport = """import groovy.json.JsonSlurper
 
 if (JSON_REPORT_ID){
 
-def filepath = "/var/jenkins_home/workspace/test/json-reports/" + JSON_REPORT_ID + ".json"
-
-return "cat ${filepath}".execute().text
+def filepath = "/var/jenkins_home/workspace/branch-cleaner/json-reports/" + JSON_REPORT_ID + ".json"
+def command = "cat " + filepath
+return command.execute().text
 
 } else {
 return ""
@@ -77,7 +77,12 @@ return ""
 
 
 pipeline {
-    agent any
+    agent {
+        node {
+            label 'linux-node'
+            customWorkspace 'workspace/branch-cleaner'
+        }
+    }
     stages {
         stage('Parameters'){
             steps {
@@ -249,6 +254,20 @@ pipeline {
                         mail to: params.MAIL,               
                             subject: "Sending report of old merged branches" ,
                             body: """${mailContent}"""
+                    }
+                }
+
+            }
+        }
+
+        stage('Deleting branches if ID was provided') {
+            steps {
+                script {
+                    if(params.JSON_REPORT_ID && params.CONFIRM_DELETE){
+                        withCredentials([string(credentialsId: "${params.CREDENTIAL}", variable: 'GITHUB_TOKEN')]) {
+                            sh "python3 delete.py --report-id=${params.JSON_REPORT_ID} --username=${params.USERNAME}"
+                            // env.REPORT=sh([script: "python3 script.py --date=2022-02-10 --base-branch=main", returnStdout: true ]).trim()
+                        }
                     }
                 }
 

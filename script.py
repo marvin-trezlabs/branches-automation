@@ -11,13 +11,12 @@ parser = argparse.ArgumentParser()
 # parser.add_argument("--dryrun", help="Set this flag to True to run in safe/report mode", dest='dryrun', action='store_true')
 parser.add_argument("--date", help="<Required> Date umbral", type=str)
 parser.add_argument("--base-branch", help="<Optional>  Define the base branch of the search criteria. Default: main", dest='baseBranch', type=str)
-parser.add_argument("--delete-all", help="<Optional> Set this flag to delete all the matched branches", dest='deleteall', action='store_true')
 parser.add_argument('-p','--protect', default=["main"], nargs='+', dest='protected', help='<Optional> Flag to protect specific branches of being delete by flag --delete-all')
 parser.add_argument("--report-id", help="<Optional>  Define the report ID", dest='reportId', type=str)
 parser.add_argument("--username", help="Define the Username", dest='username', type=str)
 parser.add_argument("--repo", help="Define the Repo", dest='repo', type=str)
 
-parser.set_defaults(deleteall=False, baseBranch="main")
+parser.set_defaults(baseBranch="main")
 
 args = parser.parse_args()
 
@@ -58,7 +57,6 @@ else:
     exit()
 
 # Getting criteria from params
-userWantsToDelete = True if args.deleteall == True else False
 baseBranch = args.baseBranch
 protectedBranches = args.protected
 
@@ -76,7 +74,6 @@ if(response.status_code != 200 ) :
 
 # Printing info
 print('Criteria:')
-print( '  Delete: True' if userWantsToDelete == True else '  Dry-Run / Report mode (Pass the --delete-all flag to delete merged branches)')
 # print('  Is dry run: ' + str(isDryRun))
 print('  Date: Older than: ' + str(umbralDate))
 print("  Protected branches: ", *protectedBranches, sep = " | ") 
@@ -138,31 +135,14 @@ for br in branches:
                     f.write(' -- Pull Request title: ' + pullRequest['title'] + '\n')
                     f.write(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n\n')
 
-            if br['name'] not in protectedBranches:
-
-                # Checking flags to determine if proceed to delete
-                if(wasMerged == True and userWantsToDelete == True) :
-                    # Deleting the branch
-                    urlDelete = "https://api.github.com/repos/"+ owner + "/" + repo + "/git/refs/heads/" + branchName
-                    responseDelete = requests.delete(urlDelete, headers=headers)
-                    print('deleting merged branch...')
-                    if(responseDelete.status_code) :
-                        print('✔ Deleted successfully')
-                    else :
-                        print('✖ Failed to delete')
-                    break
-
 # Empty results
 if(len(branchesFound) <=0 ):
     print('NOT found branches that match the Criteria')
-    #   # BUILDING THE EMAIL STRUCTURE:
-    # with open('mail-' + args.reportId + '.txt', 'a') as f:
-    #     f.write('NOT found deletable branches that match the Criteria...')
+
 else :       
     # Building json REPORT
-    # data_set = {"owner": owner, "key2": [4, 5, 6]}
-
-    # json_dump = json.dumps(data_set)
+    data_set = { "repo" : repo, "branches" : branchesFound}
+    json_dump = json.dumps(data_set)
     with open('json-reports/' + args.reportId + ".json", "w") as file:
         file.seek(0)
-        json.dump(branchesFound, file)
+        json.dump(json_dump, file)

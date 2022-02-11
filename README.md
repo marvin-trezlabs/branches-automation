@@ -1,5 +1,20 @@
 # branches-automation
 
+
+## **Jenkins job:**
+---
+
+## Requisites:
+- Python3
+- Plugins:
+  - Active choices, git, cloudbees credentials
+- Nodes:
+  - Will run on node with label 'linux-node', you can config that on Jenkinsfile
+- Workspace:
+  - The branch cleaner runs in the 'workspace/branch-cleaner' custom workspace
+- Configurations:
+  - Github Token credentials
+  - SMTP for mails
 ```
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⣶⣀⣀⣶⣄⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⢀⡠⣔⠮⠍⠛⠒⠒⠒⠚⠠⠽⣉⠙⠻⢿⣿⣿⣷⠀⠀⠀⠀⠀
@@ -24,6 +39,9 @@ TODO:
 - Other jenkins job to delete the branches
 - Read the file created from python on the report job
 - Build a text box for base branch or remove that parameter
+
+
+# Script Details:
 
 ## Copy config env sample and set a GITHUB token
 ```

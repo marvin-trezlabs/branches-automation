@@ -320,6 +320,7 @@ pipeline {
                         mail to: params.MAIL,               
                             subject: "Sending report of old merged branches" ,
                             body: """${mailContent}"""
+                        sh "rm mails/mail-${params.REPO}-${BUILD_NUMBER}.txt"
                     }
                 }
 

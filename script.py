@@ -75,8 +75,6 @@ print('  Date: Older than: ' + str(umbralDate))
 print("  Protected branches: ", *protectedBranches, sep = " | ") 
 print('\n🔍 Searching.........\n')
 
-
-
 # BUILDING THE EMAIL STRUCTURE: 
 # a if for append mode
 with open('mails/mail-' + args.reportId + '.txt', 'a') as f:
@@ -98,7 +96,6 @@ while fetchAgain:
     # Looping branches 
     for br in branches:
         branchName = br['name']
-        print(branchName)
         # Fetching the head commit in order to get the latest commit date
         response2 = requests.get(br['commit']['url'], headers=headers)
         jsondata = response2.json()

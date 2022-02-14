@@ -62,15 +62,11 @@ protectedBranches = args.protected
 
 # Setting authorization headers
 headers = {'Authorization': f'token {token}'}
-
-# Fetching branches
-url = "https://api.github.com/repos/" + owner +"/"+ repo + "/branches"
-response = requests.get(url, headers=headers)
-branches = response.json()
-
-if(response.status_code != 200 ) :
-    print('Credentials or connection error')
-    exit()
+# empty results variable
+branchesFound = []
+page = 1;
+fetchAgain = True;
+branches = {}
 
 # Printing info
 print('Criteria:')
@@ -80,8 +76,6 @@ print("  Protected branches: ", *protectedBranches, sep = " | ")
 print('\n🔍 Searching.........\n')
 
 
-# empty results variable
-branchesFound = []
 
 # BUILDING THE EMAIL STRUCTURE: 
 # a if for append mode
@@ -92,48 +86,64 @@ with open('mails/mail-' + args.reportId + '.txt', 'a') as f:
     f.write('Base branch:' + baseBranch + '\n')
     f.write('Report date:' + datetime.today().strftime("%Y-%m-%dT%H:%M:%S%z") +'\n\n')
 
-# Looping branches 
-for br in branches:
-    branchName = br['name']
-    # Fetching the head commit in order to get the latest commit date
-    response2 = requests.get(br['commit']['url'], headers=headers)
-    jsondata = response2.json()
+while fetchAgain:
+    # Fetching branches
+    url = "https://api.github.com/repos/" + owner +"/"+ repo + "/branches?per_page=100&page=" + str(page) ;
+    response = requests.get(url, headers=headers)
+    branches = response.json()
 
-    # Extracting the date 
-    branchDate = jsondata['commit']['author']['date']
-    branchDate = datetime.strptime(branchDate, "%Y-%m-%dT%H:%M:%S%z")
-    
-    #  Checking if the date is in the interval
-    if(branchDate <= umbralDate) :    
+    if(response.status_code != 200 ) :
+        print('Credentials or connection error')
+        exit()
+    # Looping branches 
+    for br in branches:
+        branchName = br['name']
+        # Fetching the head commit in order to get the latest commit date
+        response2 = requests.get(br['commit']['url'], headers=headers)
+        jsondata = response2.json()
 
-        # Fetching the pull requests of that branches to determine if was merged or not
-        url = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls?state=all&base=" + baseBranch + "&head="+ owner + ":" + branchName
-        response3 = requests.get(url, headers=headers)
-        pullRequests = response3.json()
+        # Extracting the date 
+        branchDate = jsondata['commit']['author']['date']
+        branchDate = datetime.strptime(branchDate, "%Y-%m-%dT%H:%M:%S%z")
+        
+        #  Checking if the date is in the interval
+        if(branchDate <= umbralDate) :    
 
-        # Looping PR
-        for pullRequest in pullRequests:
-            # Extracting if was merged bool 
-            wasMerged = bool(pullRequest['merged_at']) if pullRequest['merged_at'] else False
-            if(wasMerged):
-                # pprint.pprint(pullRequest)
-                # To have the array with the names
-                branchesFound.append(br['name'])
-                # Printing info 
-                if br['name'] in protectedBranches:
-                    print('\033[94m<Protected>\033[0m')
+            # Fetching the pull requests of that branches to determine if was merged or not
+            url = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls?state=all&base=" + baseBranch + "&head="+ owner + ":" + branchName
+            response3 = requests.get(url, headers=headers)
+            pullRequests = response3.json()
 
-                print('Found BRANCH: ' + br['name'])
-                print(' -- Pull Request title: ' + pullRequest['title'] )
-                print(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n')
+            # Looping PR
+            for pullRequest in pullRequests:
+                # Extracting if was merged bool 
+                wasMerged = bool(pullRequest['merged_at']) if pullRequest['merged_at'] else False
+                if(wasMerged):
+                    # pprint.pprint(pullRequest)
+                    # To have the array with the names
+                    branchesFound.append(br['name'])
+                    # Printing info 
+                    if br['name'] in protectedBranches:
+                        print('\033[94m<Protected>\033[0m')
+
+                    print('Found BRANCH: ' + br['name'])
+                    print(' -- Pull Request title: ' + pullRequest['title'] )
+                    print(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n')
 
 
-                # BUILDING THE EMAIL STRUCTURE:
-                with open('mails/mail-' + args.reportId + '.txt', 'a') as f:
-                    f.write('\033[94m<Protected>\033[0m  \n' if br['name'] in protectedBranches else '')
-                    f.write('BRANCH: ' + br['name'] + '\n')
-                    f.write(' -- Pull Request title: ' + pullRequest['title'] + '\n')
-                    f.write(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n\n')
+                    # BUILDING THE EMAIL STRUCTURE:
+                    with open('mails/mail-' + args.reportId + '.txt', 'a') as f:
+                        f.write('\033[94m<Protected>\033[0m  \n' if br['name'] in protectedBranches else '')
+                        f.write('BRANCH: ' + br['name'] + '\n')
+                        f.write(' -- Pull Request title: ' + pullRequest['title'] + '\n')
+                        f.write(" -- Merged at date: " + pullRequest['merged_at'] + ', to base branch: ' + pullRequest['base']['ref'] +'\n\n')
+    # Checking if we should loop again or we are in the last page     
+    if(hasattr(response, 'links')):
+        if(not 'last' in response.links) :
+            fetchAgain = False;
+        page += 1
+    else :
+        fetchAgain = False;
 
 # Empty results
 if(len(branchesFound) <=0 ):
